@@ -103,6 +103,8 @@ export default App;
 
 ### Queries
 
+#### gql
+
 Let's create a simple query in which we get a todo list
 ```ts
 // query/todos.ts
@@ -120,33 +122,80 @@ export const GET_ALL_TODOS = gql`
 `;
 ```
 
+#### useQuery
+
 Now this request needs to be called. Apollo provides a `useQuery` hook, let's use it:
 ```tsx
-const Component: React.FC = () => {
-  const { data } = useQuery(GET_ALL_TODOS);
+// components/use-query.tsx
 
-  return <div>{JSON.stringify(data, null, 2)}</div>;
-};
-```
+const UseQuery: React.FC = () => {
+  const { loading, data } = useQuery(GET_ALL_TODOS);
 
-In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook:
-```tsx
-const Component: React.FC = () => {
-  const [getTodos, { data }] = useLazyQuery(GET_ALL_TODOS, {
-    variables: {
-      limit: 10,
-    },
-  });
-
-  return (
-    <div>
-      <button onClick={() => getTodos()}>Make lazy request</button>
-      {data && JSON.stringify(data, null, 2)}
-    </div>
+  return !loading ? (
+    <div>{JSON.stringify(data, null, 2)}</div>
+  ) : (
+    <Loader />
   );
 };
 ```
 
+#### useLazyQuery
+
+In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook:
+```tsx
+// components/use-lazy-query.tsx
+
+const UseLazyQuery: React.FC = () => {
+  const [getTodos, { loading, data }] = useLazyQuery(GET_ALL_TODOS, {
+    variables: { limit: 10 },
+  });
+
+  return !loading ? (
+    <div>
+      <button onClick={() => getTodos()}>Make lazy request</button>
+      {data && JSON.stringify(data, null, 2)}
+    </div>
+  ) : (
+    <Loader />
+  );
+};
+```
+
+#### Polling
+
+Polling provides near-real-time synchronization with your server by executing your query periodically at a specified interval:
+```tsx
+// components/use-query-polling.tsx
+
+const UseQueryPolling: React.FC = () => {
+  const { loading, data } = useQuery(GET_ALL_TODOS, {
+    variables: { limit: 10 },
+    pollInterval: 1000,
+  });
+
+  return !loading ? <div>{JSON.stringify(data, null, 2)}</div> : <Loader />;
+};
+```
+
+#### Refetching
+
+Refetching enables you to refresh query results in response to a particular user action, as opposed to using a fixed interval:
+```tsx
+// components/use-query-refetch.tsx
+
+const UseQueryRefetch: React.FC = () => {
+  const { loading, data, refetch } = useQuery(GET_ALL_TODOS);
+
+  return !loading ? (
+    <div>
+      <button onClick={() => refetch({ limit: 20 })}>Refetch query</button>
+      {data && JSON.stringify(data, null, 2)}
+    </div>
+  ) : (
+    <Loader />
+  );
+};
+```
 
 ### Mutations
 

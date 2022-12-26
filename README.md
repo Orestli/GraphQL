@@ -1,10 +1,8 @@
 ## 1. GraphQL
 
-## 2. GraphQL Playground
+## 2. Front-end
 
-## 3. Front-end
-
-### 3. 1. Native JavaScript
+### 2. 1. Native JavaScript
 You can interact with GraphQL not only through third-party libraries, but also through pure JavaScript.
 To do this, we'll create a wrapper that will accept a Queri string and execute a request:
 
@@ -54,10 +52,11 @@ console.log(data);
 }
 ```
 
-### 3. 2. Apollo (NextJS)
-Description
+### 2. 2. Apollo (NextJS)
+Apollo Client is a state management library that simplifies managing remote and local data with GraphQL.
 
-#### 1. Dependencies
+### Get started
+#### 1. Install dependencies
 
 Applications that use Apollo Client require the following dependencies:
 ```bash
@@ -68,7 +67,7 @@ yarn add @apollo/client graphql
 npm install @apollo/client graphql
 
 # pnpm
-pnpm @apollo/client graphql
+pnpm install @apollo/client graphql
 ```
 
 #### 2. Initialize ApolloClient
@@ -87,8 +86,9 @@ const client = new ApolloClient({
 export default client;
 ```
 
-#### 3. Connect client to NextJS
+#### 3. Connect your client to NextJS
 
+You connect Apollo Client to React with the `ApolloProvider` component. Similar to React's `Context.Provider`, `ApolloProvider` wraps your application and places Apollo Client on the context, enabling you to access it from anywhere in your component tree:
 ```tsx
 // _app.tsx
 
@@ -100,3 +100,54 @@ const App = ({ Component, pageProps }: AppProps) => (
 
 export default App;
 ```
+
+### Queries
+
+Let's create a simple query in which we get a todo list
+```ts
+// query/todos.ts
+
+import { gql } from '@apollo/client';
+
+export const GET_ALL_TODOS = gql`
+  query Todos($limit: Int = 5) {
+    todos(options: { paginate: { limit: $limit } }) {
+      data {
+        title
+      }
+    }
+  }
+`;
+```
+
+Now this request needs to be called. Apollo provides a `useQuery` hook, let's use it:
+```tsx
+const Component: React.FC = () => {
+  const { data } = useQuery(GET_ALL_TODOS);
+
+  return <div>{JSON.stringify(data, null, 2)}</div>;
+};
+```
+
+In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook:
+```tsx
+const Component: React.FC = () => {
+  const [getTodos, { data }] = useLazyQuery(GET_ALL_TODOS, {
+    variables: {
+      limit: 10,
+    },
+  });
+
+  return (
+    <div>
+      <button onClick={() => getTodos()}>Make lazy request</button>
+      {data && JSON.stringify(data, null, 2)}
+    </div>
+  );
+};
+```
+
+
+### Mutations
+
+### Subscriptions

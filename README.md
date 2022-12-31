@@ -38,7 +38,7 @@ const { data } = await makeRequest(`
 
 console.log(data);
 ```
-```ts
+```json
 {
   "character": {
     "id": "1",
@@ -101,11 +101,11 @@ const App = ({ Component, pageProps }: AppProps) => (
 export default App;
 ```
 
-### Queries
+### gql
 
-#### gql
+To use GraphQL queries in Apollo, we need to write them in a `gql` function.
 
-Let's create a simple query in which we get a todo list
+Let's create a simple query in which we get a todo list:
 ```ts
 // query/todos.ts
 
@@ -122,11 +122,13 @@ export const GET_ALL_TODOS = gql`
 `;
 ```
 
+### Queries
+
 #### useQuery
 
 Now this request needs to be called. Apollo provides a `useQuery` hook, let's use it:
 ```tsx
-// components/use-query.tsx
+// use-query.tsx
 
 const UseQuery: React.FC = () => {
   const { loading, data } = useQuery(GET_ALL_TODOS);
@@ -143,7 +145,7 @@ const UseQuery: React.FC = () => {
 
 In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook:
 ```tsx
-// components/use-lazy-query.tsx
+// use-lazy-query.tsx
 
 const UseLazyQuery: React.FC = () => {
   const [getTodos, { loading, data }] = useLazyQuery(GET_ALL_TODOS, {
@@ -165,7 +167,7 @@ const UseLazyQuery: React.FC = () => {
 
 Polling provides near-real-time synchronization with your server by executing your query periodically at a specified interval:
 ```tsx
-// components/use-query-polling.tsx
+// use-query-polling.tsx
 
 const UseQueryPolling: React.FC = () => {
   const { loading, data } = useQuery(GET_ALL_TODOS, {
@@ -181,7 +183,7 @@ const UseQueryPolling: React.FC = () => {
 
 Refetching enables you to refresh query results in response to a particular user action, as opposed to using a fixed interval:
 ```tsx
-// components/use-query-refetch.tsx
+// use-query-refetch.tsx
 
 const UseQueryRefetch: React.FC = () => {
   const { loading, data, refetch } = useQuery(GET_ALL_TODOS);
@@ -198,5 +200,110 @@ const UseQueryRefetch: React.FC = () => {
 ```
 
 ### Mutations
+
+Mutations act as `POST / DELETE / PUT / PATCH / ...` methods. 
+Let's create one for example:
+```ts
+import { gql } from '@apollo/client';
+
+export const CREATE_TODO = gql`
+  mutation CreateTodo($input: CreateTodoInput!) {
+    createTodo(input: $input) {
+      id
+      title
+      completed
+    }
+  }
+`;
+```
+
+#### useMutation
+
+```tsx
+// use-mutation.tsx
+
+const UseMutation: React.FC = () => {
+  const [title, setTitle] = useState('');
+  const [completed, setCompleted] = useState(false);
+
+  const [createTodo, { loading }] = useMutation(CREATE_TODO);
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    createTodo({
+      variables: {
+        input: { title, completed },
+      },
+    });
+
+    setTitle('');
+  };
+
+  return !loading ? (
+    <form onSubmit={onSubmit}>
+      <input
+        placeholder="Title"
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+      />
+      <input
+        type="checkbox"
+        checked={completed}
+        onChange={(event) => setCompleted(event.currentTarget.checked)}
+      />
+      <button type="submit">Add Todo</button>
+    </form>
+  ) : (
+    <Loader />
+  );
+};
+```
+
+```json
+{
+  "data": {
+    "createTodo": {
+      "id": "201",
+      "title": "Test",
+      "completed": true,
+      "__typename": "Todo"
+    }
+  }
+}
+```
+
+#### UseMutation without manually passing props (default values)
+
+The useMutation hook accepts an options object as its second parameter. Here's an example that provides some default values for GraphQL variables:
+```tsx
+// use-default-mutation.tsx
+
+const [createTodo, { loading }] = useMutation(CREATE_TODO, {
+  variables: {
+    input: { title, completed: false },
+  },
+});
+```
+
+#### Reset
+
+The mutation result object returned by `useMutation` includes a reset function:
+```ts
+const [createTodo, { reset }] = useMutation(CREATE_TODO);
+```
+This function is used to completely reset the mutation (return to the original state)
+
+#### Refetching queries
+
+If you know that after the mutation you need to query for data, you can use `refetchQueries`:
+```tsx
+// use-refetch-mutation.tsx
+
+const [createTodo] = useMutation(CREATE_TODO, {
+  refetchQueries: ['Todos']
+});
+```
+After doing the `createTodo` mutation, the `Todos` query will be automatically triggered
 
 ### Subscriptions

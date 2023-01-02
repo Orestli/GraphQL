@@ -1,5 +1,105 @@
 ## 1. GraphQL
 
+### Scalar types
+
+Scalar types are similar to primitive types in `JavaScript`. They always resolve to concrete data.
+
+GraphQL's default scalar types are:
+- `Int`: A signed 32‐bit integer
+- `Float`: A signed double-precision floating-point value
+- `String`: A UTF‐8 character sequence
+- `Boolean`: `true` or `false`
+- `ID`: A unique identifier
+
+### Interface
+
+```graphql
+interface Datetime {
+  createdAt: Date!
+  updatedAt: Date!
+}
+```
+
+### Type
+
+Simple type:
+```graphql
+type Todo {
+  id: ID
+  title: String
+  completed: Boolean
+}
+```
+
+Type can be implemented from an interface and have the same fields:
+```graphql
+type Achievement {
+  value: String!
+}
+
+type User implements Datetime {
+  id: ID
+  firstName: String!
+  lastName: String
+  age: Number!
+  achievements: [Achievement]
+}
+```
+
+### Enum & Union
+
+```graphql
+enum UserPermissions {
+  USER
+  MODERATOR
+  ADMIN
+}
+```
+
+```graphql
+type RateProjectNotification {
+  id: ID!
+  rating: Float!
+  author: {
+    id: ID!
+    username: String!
+  }
+}
+
+type CommentProjectNotification {
+  id: ID!
+  comment: String!
+  commenter: {
+    id: ID!
+    username: String!
+    firstName: String!
+  }
+}
+
+union NotificationContent = RateProjectNotification | CommentProjectNotification
+```
+
+### Querying a union
+
+GraphQL clients don't know which object type a field will return if the field's return type is a union. To account for this, a query can include the subfields of multiple possible types.
+
+Here's a valid query for the schema above:
+```graphql
+query GetNotifications {
+  notifications {
+    ... on RateProjectNotification {
+      rating
+    }
+    
+    ... on CommentProjectNotification {
+      comment
+    }
+  }
+}
+```
+
+### Input
+
 ## 2. Front-end
 
 ### 2. 1. Native JavaScript
@@ -307,9 +407,44 @@ After doing the `createTodo` mutation, the `Todos` query will be automatically t
 
 ### Subscriptions
 
+Let's write a GraphQL query:
+```ts
+import { gql } from '@apollo/client';
+
+export const LIFT_STATUS_CHANGE = gql`
+  subscription LiftStatusChange {
+    liftStatusChange {
+      id
+      name
+      status
+    }
+  }
+`;
+```
+
+#### useSubscription
+```tsx
+// use-subscription.tsx
+
+const UseSubscription: React.FC = () => {
+  const { data, loading } = useSubscription(LIFT_STATUS_CHANGE);
+
+  return !loading ? (
+    <div>
+      {data?.liftStatusChange?.name} - {data?.liftStatusChange?.status}
+    </div>
+  ) : (
+    <Loader />
+  );
+};
+```
+
 #
 
 ### Links
+
+The Apollo Link library helps you customize the flow of data between Apollo Client and your GraphQL server. You can define your client's network behavior as a chain of link objects that execute in a sequence.  
+Each link should represent either a self-contained modification to a GraphQL operation or a side effect.
 
 #### File uploads
 

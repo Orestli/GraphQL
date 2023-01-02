@@ -322,8 +322,11 @@ yarn add -D @types/apollo-upload-client
 
 Create a link instance:
 ```ts
+// api/index.ts
+
 const uploadLink = createUploadLink({
   uri: 'https://graphqlzero.almansi.me/api',
+  credentials: 'include',
 });
 ```
 
@@ -356,6 +359,10 @@ This link makes it easy to perform the asynchronous lookup of things like authen
 
 Let's create a context:
 ```ts
+// api/index.ts
+
+const getMockToken = async () => crypto.randomBytes(16).toString('hex');
+
 const authLink = setContext(async (_, context) => {
   const token = await getMockToken();
 
@@ -371,7 +378,47 @@ const authLink = setContext(async (_, context) => {
 
 #### onError
 
-// ...
+Use the onError link to perform custom logic when a GraphQL or network error occurs. You pass this link a function that's executed if an operation returns one or more errors:
+```ts
+// api/index.ts
+
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, ...details }) =>
+      console.log(`GraphQL Error: Message: ${message}`, details)
+    );
+  }
+
+  if (networkError) {
+    console.log('Network Error: ', networkError);
+  }
+});
+```
+
+Now when an error occurs, `onEror` will catch it and execute our logic.
+
+Now let's handle the case in the code above if the user is not logged in:
+```ts
+// api/index.ts
+
+const hasUnauthorized =
+  graphQLErrors &&
+  graphQLErrors.find((error) => error.message.includes('unauthenticated'));
+
+if (hasUnauthorized && typeof window !== 'undefined') {
+  Router.push('/login');
+}
+```
+
+After creating the links we need, let's combine them together using `from`:
+```ts
+// api/index.ts
+
+const client = new ApolloClient({
+  link: from([errorLink, authLink, uploadLink]),
+  cache: new InMemoryCache(),
+}); 
+```
 
 ## 3. Generator API
 

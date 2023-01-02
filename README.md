@@ -74,7 +74,7 @@ pnpm install @apollo/client graphql
 
 With our dependencies set up, we can now initialize an ApolloClient instance:
 ```ts
-// client.ts
+// api/index.ts
 
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 
@@ -267,7 +267,6 @@ const UseMutation: React.FC = () => {
       "id": "201",
       "title": "Test",
       "completed": true,
-      "__typename": "Todo"
     }
   }
 }
@@ -308,7 +307,73 @@ After doing the `createTodo` mutation, the `Todos` query will be automatically t
 
 ### Subscriptions
 
-## 3. Autogenerator API
+#
+
+### Links
+
+#### File uploads
+
+Apollo Client doesn't support a file upload feature out of the box.  
+If you'd like to enable file upload capabilities, you will have to add a 3rd party package:
+```bash
+yarn add apollo-upload-client
+yarn add -D @types/apollo-upload-client
+```
+
+Create a link instance:
+```ts
+const uploadLink = createUploadLink({
+  uri: 'https://graphqlzero.almansi.me/api',
+});
+```
+
+Usage example (after modifying the `client` instance):
+```tsx
+const MUTATION = gql`
+  mutation ($file: Upload!) {
+    uploadFile(file: $file) {
+      success
+    }
+  }
+`;
+
+const UploadFile: React.FC () => {
+  const [uploadFile] = useMutation(MUTATION);
+
+  const onChange = ({
+    target: {
+      files: [file],
+    },
+  }) => uploadFile({ variables: { file } })
+
+  return <input type="file" onChange={onChange} />;
+}
+```
+
+#### setContext
+
+This link makes it easy to perform the asynchronous lookup of things like authentication tokens and more.
+
+Let's create a context:
+```ts
+const authLink = setContext(async (_, context) => {
+  const token = await getMockToken();
+
+  return {
+    ...context,
+    headers: {
+      ...context.headers,
+      authorization: token ? `JWT ${token}` : null,
+    },
+  };
+});
+```
+
+#### onError
+
+// ...
+
+## 3. Generator API
 
 The addition will be the generation of the API using the script, let's figure it out.
 
@@ -356,7 +421,7 @@ const config: CodegenConfig = {
 };
 ```
 
-### Types?
+### Types
 
 By creating `.graphql` files without a schema, we lose typing. Let's add a plugin that will generate a single graphQL schema from all presented into one file:
 ```bash
@@ -384,8 +449,15 @@ const config: CodegenConfig = {
 
 Now, when working with `.graphql` files, we will have typing.
 
+### Generate
+
+Once configured, we are ready to generate the API. Let's use a ready-made script:
+```bash
+yarn generate-api
+```
+
 #
-Сongrats! We are done with the basic generator setup. At the output, we will get generated tools for working with the API.
+Сongrats! We are done with the generator. At the output, we will get generated tools for working with the API.
 
 **API:** [index.ts]() (`src/services/generated-api/index.ts`)  
 **Schema:** [schema.graphql]() (`src/services/generated-api/schema.graphql`)

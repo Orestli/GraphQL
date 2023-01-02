@@ -4,7 +4,7 @@
 
 ### 2. 1. Native JavaScript
 You can interact with GraphQL not only through third-party libraries, but also through pure JavaScript.
-To do this, we'll create a wrapper that will accept a Queri string and execute a request:
+To do this, we'll create a wrapper that will accept a query string and execute a request:
 
 ```ts
 const makeRequest = (query: string) =>
@@ -101,7 +101,7 @@ const App = ({ Component, pageProps }: AppProps) => (
 export default App;
 ```
 
-### gql
+#### gql
 
 To use GraphQL queries in Apollo, we need to write them in a `gql` function.
 
@@ -307,3 +307,85 @@ const [createTodo] = useMutation(CREATE_TODO, {
 After doing the `createTodo` mutation, the `Todos` query will be automatically triggered
 
 ### Subscriptions
+
+## 3. Autogenerator API
+
+The addition will be the generation of the API using the script, let's figure it out.
+
+### Quick start
+
+#### 1. Install dependencies
+
+```bash
+yarn add -D @graphql-codegen/cli
+```
+
+Let's also install plugins (full list [here](https://the-guild.dev/graphql/codegen/plugins)):
+```bash
+yarn add -D @graphql-codegen/typescript @graphql-codegen/typescript-operations @graphql-codegen/typescript-react-apollo
+```
+
+#### 2. Initialize generator
+
+Let's use the CLI generator and execute the following script:
+```bash
+yarn graphql-codegen init
+```
+
+Question by question, it will guide you through the whole process of setting up a schema, selecting plugins, picking a destination of a generated file, and a lot more.
+
+### Config
+
+After generation, the config file codegen.ts will be created in the root of the project (by default), let's add our plugins:
+```ts
+// codegen.ts
+
+const config: CodegenConfig = {
+  overwrite: true,
+  schema: 'https://graphqlzero.almansi.me/api',
+  documents: 'src/graphql/**/*.graphql',
+  generates: {
+    'src/services/generated-api/index.ts': {
+      plugins: [
+        'typescript',
+        'typescript-operations',
+        'typescript-react-apollo',
+      ],
+    },
+  },
+};
+```
+
+### Types?
+
+By creating `.graphql` files without a schema, we lose typing. Let's add a plugin that will generate a single graphQL schema from all presented into one file:
+```bash
+yarn add -D @graphql-codegen/schema-ast
+```
+
+Update config:
+```ts
+// codegen.ts
+
+'src/services/generated-api/schema.graphql': {
+  plugins: ['schema-ast'],
+}
+
+const config: CodegenConfig = {
+  // ...
+  generates: {
+    // ...
+    'src/services/generated-api/schema.graphql': {
+      plugins: ['schema-ast']
+    }
+  }
+}
+```
+
+Now, when working with `.graphql` files, we will have typing.
+
+#
+Сongrats! We are done with the basic generator setup. At the output, we will get generated tools for working with the API.
+
+**API:** [index.ts]() (`src/services/generated-api/index.ts`)  
+**Schema:** [schema.graphql]() (`src/services/generated-api/schema.graphql`)

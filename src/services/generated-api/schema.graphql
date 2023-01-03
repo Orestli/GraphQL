@@ -1,0 +1,477 @@
+directive @cacheControl(
+  maxAge: Int
+  scope: CacheControlScope
+) on FIELD_DEFINITION | INTERFACE | OBJECT
+
+type Address {
+  city: String
+  geo: Geo
+  street: String
+  suite: String
+  zipcode: String
+}
+
+input AddressInput {
+  city: String
+  geo: GeoInput
+  street: String
+  suite: String
+  zipcode: String
+}
+
+type Album {
+  id: ID
+  photos(options: PageQueryOptions): PhotosPage
+  title: String
+  user: User
+}
+
+type AlbumsPage {
+  data: [Album]
+  links: PaginationLinks
+  meta: PageMetadata
+}
+
+enum CacheControlScope {
+  PRIVATE
+  PUBLIC
+}
+
+type Comment {
+  body: String
+  email: String
+  id: ID
+  name: String
+  post: Post
+}
+
+type CommentsPage {
+  data: [Comment]
+  links: PaginationLinks
+  meta: PageMetadata
+}
+
+type Company {
+  bs: String
+  catchPhrase: String
+  name: String
+}
+
+input CompanyInput {
+  bs: String
+  catchPhrase: String
+  name: String
+}
+
+input CreateAlbumInput {
+  title: String!
+  userId: ID!
+}
+
+input CreateCommentInput {
+  body: String!
+  email: String!
+  name: String!
+}
+
+input CreatePhotoInput {
+  thumbnailUrl: String!
+  title: String!
+  url: String!
+}
+
+input CreatePostInput {
+  body: String!
+  title: String!
+}
+
+input CreateTodoInput {
+  completed: Boolean!
+  title: String!
+}
+
+input CreateUserInput {
+  address: AddressInput
+  company: CompanyInput
+  email: String!
+  name: String!
+  phone: String
+  username: String!
+  website: String
+}
+
+type Geo {
+  lat: Float
+  lng: Float
+}
+
+input GeoInput {
+  lat: Float
+  lng: Float
+}
+
+"""
+A `Lift` is a chairlift, gondola, tram, funicular, pulley, rope tow, or other means of ascending a mountain.
+"""
+type Lift {
+  """
+  The number of people that a `Lift` can hold
+  """
+  capacity: Int!
+
+  """
+  The number of feet in elevation that a `Lift` ascends
+  """
+  elevationGain: Int!
+
+  """
+  The unique identifier for a `Lift` (id: "panorama")
+  """
+  id: ID!
+
+  """
+  The name of a `Lift`
+  """
+  name: String!
+
+  """
+  A boolean describing whether a `Lift` is open for night skiing
+  """
+  night: Boolean!
+
+  """
+  The current status for a `Lift`: `OPEN`, `CLOSED`, `HOLD`
+  """
+  status: LiftStatus
+
+  """
+  A list of trails that this `Lift` serves
+  """
+  trailAccess: [Trail!]!
+}
+
+"""
+An enum describing the options for `LiftStatus`: `OPEN`, `CLOSED`, `HOLD`
+"""
+enum LiftStatus {
+  CLOSED
+  HOLD
+  OPEN
+}
+
+type Mutation {
+  _: Int
+  createAlbum(input: CreateAlbumInput!): Album
+  createComment(input: CreateCommentInput!): Comment
+  createPhoto(input: CreatePhotoInput!): Photo
+  createPost(input: CreatePostInput!): Post
+  createTodo(input: CreateTodoInput!): Todo
+  createUser(input: CreateUserInput!): User
+  deleteAlbum(id: ID!): Boolean
+  deleteComment(id: ID!): Boolean
+  deletePhoto(id: ID!): Boolean
+  deletePost(id: ID!): Boolean
+  deleteTodo(id: ID!): Boolean
+  deleteUser(id: ID!): Boolean
+
+  """
+  Sets a `Lift` status by sending `id` and `status`
+  """
+  setLiftStatus(id: ID!, status: LiftStatus!): Lift!
+
+  """
+  Sets a `Trail` status by sending `id` and `status`
+  """
+  setTrailStatus(id: ID!, status: TrailStatus!): Trail!
+  updateAlbum(id: ID!, input: UpdateAlbumInput!): Album
+  updateComment(id: ID!, input: UpdateCommentInput!): Comment
+  updatePhoto(id: ID!, input: UpdatePhotoInput!): Photo
+  updatePost(id: ID!, input: UpdatePostInput!): Post
+  updateTodo(id: ID!, input: UpdateTodoInput!): Todo
+  updateUser(id: ID!, input: UpdateUserInput!): User
+}
+
+enum OperatorKindEnum {
+  GTE
+  LIKE
+  LTE
+  NE
+}
+
+input OperatorOptions {
+  field: String
+  kind: OperatorKindEnum
+  value: String
+}
+
+type PageLimitPair {
+  limit: Int
+  page: Int
+}
+
+type PageMetadata {
+  totalCount: Int
+}
+
+input PageQueryOptions {
+  operators: [OperatorOptions]
+  paginate: PaginateOptions
+  search: SearchOptions
+  slice: SliceOptions
+  sort: [SortOptions]
+}
+
+input PaginateOptions {
+  limit: Int
+  page: Int
+}
+
+type PaginationLinks {
+  first: PageLimitPair
+  last: PageLimitPair
+  next: PageLimitPair
+  prev: PageLimitPair
+}
+
+type Photo {
+  album: Album
+  id: ID
+  thumbnailUrl: String
+  title: String
+  url: String
+}
+
+type PhotosPage {
+  data: [Photo]
+  links: PaginationLinks
+  meta: PageMetadata
+}
+
+type Post {
+  body: String
+  comments(options: PageQueryOptions): CommentsPage
+  id: ID
+  title: String
+  user: User
+}
+
+type PostsPage {
+  data: [Post]
+  links: PaginationLinks
+  meta: PageMetadata
+}
+
+type Query {
+  """
+  Returns a `Lift` by `id` (id: "panorama")
+  """
+  Lift(id: ID!): Lift!
+
+  """
+  Returns a `Trail` by `id` (id: "old-witch")
+  """
+  Trail(id: ID!): Trail!
+  _: Int
+  album(id: ID!): Album
+  albums(options: PageQueryOptions): AlbumsPage
+
+  """
+  A list of all `Lift` objects
+  """
+  allLifts(status: LiftStatus): [Lift!]!
+
+  """
+  A list of all `Trail` objects
+  """
+  allTrails(status: TrailStatus): [Trail!]!
+  comment(id: ID!): Comment
+  comments(options: PageQueryOptions): CommentsPage
+
+  """
+  Returns an `Int` of `Lift` objects with optional `LiftStatus` filter
+  """
+  liftCount(status: LiftStatus): Int!
+  photo(id: ID!): Photo
+  photos(options: PageQueryOptions): PhotosPage
+  post(id: ID!): Post
+  posts(options: PageQueryOptions): PostsPage
+
+  """
+  Returns a list of `SearchResult` objects based on `term` or `status`
+  """
+  search(status: LiftStatus, term: String): [SearchResult!]!
+  todo(id: ID!): Todo
+  todos(options: PageQueryOptions): TodosPage
+
+  """
+  Returns an `Int` of `Trail` objects with optional `TrailStatus` filter
+  """
+  trailCount(status: TrailStatus): Int!
+  user(id: ID!): User
+  users(options: PageQueryOptions): UsersPage
+}
+
+input SearchOptions {
+  q: String
+}
+
+"""
+This union type returns one of two types: a `Lift` or a `Trail`. When we search for a letter, we'll return a list of either `Lift` or `Trail` objects.
+"""
+union SearchResult = Lift | Trail
+
+input SliceOptions {
+  end: Int
+  limit: Int
+  start: Int
+}
+
+input SortOptions {
+  field: String
+  order: SortOrderEnum
+}
+
+enum SortOrderEnum {
+  ASC
+  DESC
+}
+
+type Subscription {
+  """
+  Listens for changes in lift status
+  """
+  liftStatusChange: Lift
+
+  """
+  Listens for changes in trail status
+  """
+  trailStatusChange: Trail
+}
+
+type Todo {
+  completed: Boolean
+  id: ID
+  title: String
+  user: User
+}
+
+type TodosPage {
+  data: [Todo]
+  links: PaginationLinks
+  meta: PageMetadata
+}
+
+"""
+A `Trail` is a run at a ski resort
+"""
+type Trail {
+  """
+  A list of Lifts that provide access to this `Trail`
+  """
+  accessedByLifts: [Lift!]!
+
+  """
+  The difficulty rating for a `Trail`
+  """
+  difficulty: String!
+
+  """
+  A boolean describing whether or not a `Trail` is groomed
+  """
+  groomed: Boolean!
+
+  """
+  A unique identifier for a `Trail` (id: 'hemmed-slacks')
+  """
+  id: ID!
+
+  """
+  The name of a `Trail`
+  """
+  name: String!
+
+  """
+  A boolean describing whether or not a `Trail` is open for night skiing
+  """
+  night: Boolean!
+
+  """
+  The current status for a `Trail`: OPEN, CLOSED
+  """
+  status: TrailStatus
+
+  """
+  A boolean describing whether or not a `Trail` has trees
+  """
+  trees: Boolean!
+}
+
+"""
+An enum describing the options for `TrailStatus`: `OPEN`, `CLOSED`
+"""
+enum TrailStatus {
+  CLOSED
+  OPEN
+}
+
+input UpdateAlbumInput {
+  title: String
+  userId: ID
+}
+
+input UpdateCommentInput {
+  body: String
+  email: String
+  name: String
+}
+
+input UpdatePhotoInput {
+  thumbnailUrl: String
+  title: String
+  url: String
+}
+
+input UpdatePostInput {
+  body: String
+  title: String
+}
+
+input UpdateTodoInput {
+  completed: Boolean
+  title: String
+}
+
+input UpdateUserInput {
+  address: AddressInput
+  company: CompanyInput
+  email: String
+  name: String
+  phone: String
+  username: String
+  website: String
+}
+
+"""
+The `Upload` scalar type represents a file upload.
+"""
+scalar Upload
+
+type User {
+  address: Address
+  albums(options: PageQueryOptions): AlbumsPage
+  company: Company
+  email: String
+  id: ID
+  name: String
+  phone: String
+  posts(options: PageQueryOptions): PostsPage
+  todos(options: PageQueryOptions): TodosPage
+  username: String
+  website: String
+}
+
+type UsersPage {
+  data: [User]
+  links: PaginationLinks
+  meta: PageMetadata
+}

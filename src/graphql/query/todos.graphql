@@ -1,0 +1,11 @@
+query Todos($limit: Int = 5) {
+	todos(options: { paginate: { limit: $limit } }) {
+		data {
+			id
+			title
+			completed
+
+			# or ...TodoFields
+		}
+	}
+}

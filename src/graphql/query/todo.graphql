@@ -1,0 +1,9 @@
+query Todo($id: ID!) {
+	todo(id: $id) {
+		id
+		title
+		completed
+
+		# or ...TodoFields
+	}
+}

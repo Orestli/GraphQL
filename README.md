@@ -11,23 +11,26 @@ GraphQL's default scalar types are:
 - `Boolean`: `true` or `false`
 - `ID`: A unique identifier
 
-### Interface
+### Type & Interface
 
-```graphql
-interface Datetime {
-  createdAt: Date!
-  updatedAt: Date!
-}
-```
-
-### Type
-
-Simple type:
+Most of the schema types you define have one or more fields:
 ```graphql
 type Todo {
   id: ID
   title: String
   completed: Boolean
+}
+
+type Query {
+  todo(id: ID!): Todo
+  todos: [Todo]
+}
+```
+
+```graphql
+interface Datetime {
+  createdAt: Date!
+  updatedAt: Date!
 }
 ```
 
@@ -48,6 +51,7 @@ type User implements Datetime {
 
 ### Enum & Union
 
+An enum is similar to a scalar type, but its legal values are defined in the schema. Here's an example definition:
 ```graphql
 enum UserPermissions {
   USER
@@ -56,6 +60,7 @@ enum UserPermissions {
 }
 ```
 
+When you define a union type, you declare which object types are included in the union:
 ```graphql
 type RateProjectNotification {
   id: ID!
@@ -98,7 +103,130 @@ query GetNotifications {
 }
 ```
 
+### Field nullability
+
+By default, it's valid for any field in your schema to return `null` instead of its specified type. You can require that a particular field doesn't return `null` with an exclamation mark `!`, like so:
+```graphql
+type User {
+  username: String! # Can't return null
+  age: Number
+}
+```
+
+Nullability and lists:
+```graphql
+type Comment {
+  id: ID!
+  text: String!
+}
+
+type Project {
+  comments: [Comment!]! # This array can't be null AND items inside array can't be null
+}
+```
+
+- If `!` appears inside the square brackets, the returned list can't include items that are `null`.
+- If `!` appears outside the square brackets, the list itself can't be `null`.
+- In any case, it's valid for a list field to return an empty list.
+
 ### Input
+
+Input types are special object types that allow you to provide hierarchical data as arguments to fields:
+```graphql
+type RegisterType {
+  email: String!
+  firstName: String!
+  lastName: String
+  username: String!
+  age: Number
+  roles: [String!]
+}
+```
+
+Example of use with mutation:
+```graphql
+input ProjectCommentInput {
+  id: ID!
+  author: String!
+  text: String!
+}
+
+mutation AddComment($input: ProjectCommentInput!) {
+  addComment(input: $input) {
+    text
+  }
+}
+```
+
+### Fragment
+
+The snippet allows you to get fields based on the specified type. Used as reused fields:
+```graphql
+type Todo {
+  id: ID
+  title: String
+  completed: Boolean
+}
+
+fragment TodoFields on Todo {
+  id
+  title
+  completed
+}
+
+query Todo($id: ID!) {
+  todo(id: $id) {
+    ...TodoFields
+  }
+}
+```
+
+Or you can use inline fragment:
+```graphql
+query Todo($id: ID!) {
+  todo(id: $id) {
+    ... on Todo {
+      id
+      title
+      completed
+    }
+  }
+}
+```
+
+### Directives
+
+In `GraphQL` there are 2 directives:
+- `@include`: include field when `true`
+- `@skip`: skip field when `true`
+
+Include:
+```graphql
+query User($id: String!, $withFriends: Boolean = true) {
+  user(id: $id) {
+    id
+    username
+    friends @include(if: $withFriends) {
+      username
+    }
+  }
+}
+```
+
+Skip:
+```graphql
+mutation CreateTodo($input: CreateTodoInput!, $skipUser: Boolean = true) {
+  createTodo(input: $input) {
+    id
+    title
+    completed
+    user @skip(if: $skipUser) {
+      id
+      name
+    }
+  }
+}
+```
 
 ## 2. Front-end
 

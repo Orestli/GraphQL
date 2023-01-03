@@ -290,20 +290,14 @@ Applications that use Apollo Client require the following dependencies:
 ```bash
 # yarn
 yarn add @apollo/client graphql
-
-# npm
-npm install @apollo/client graphql
-
-# pnpm
-pnpm install @apollo/client graphql
 ```
 
 #### 2. Initialize ApolloClient
 
-With our dependencies set up, we can now initialize an ApolloClient instance:
-```ts
-// api/index.ts
+With our dependencies set up, we can now initialize an ApolloClient instance.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```ts
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 
 const client = new ApolloClient({
@@ -316,10 +310,10 @@ export default client;
 
 #### 3. Connect your client to NextJS
 
-You connect Apollo Client to React with the `ApolloProvider` component. Similar to React's `Context.Provider`, `ApolloProvider` wraps your application and places Apollo Client on the context, enabling you to access it from anywhere in your component tree:
-```tsx
-// _app.tsx
+You connect Apollo Client to React with the `ApolloProvider` component. Similar to React's `Context.Provider`, `ApolloProvider` wraps your application and places Apollo Client on the context, enabling you to access it from anywhere in your component tree.
 
+[_app.tsx](https://github.com/Orestli/GraphQL/blob/main/src/pages/_app.tsx):
+```tsx
 const App = ({ Component, pageProps }: AppProps) => (
   <ApolloProvider client={client}>
     <Component {...pageProps} />
@@ -329,14 +323,14 @@ const App = ({ Component, pageProps }: AppProps) => (
 export default App;
 ```
 
-#### gql
+### gql
 
 To use GraphQL queries in Apollo, we need to write them in a `gql` function.
 
-Let's create a simple query in which we get a todo list:
-```ts
-// query/todos.ts
+Let's create a simple query in which we get a todo list.
 
+[query/todos.ts](https://github.com/Orestli/GraphQL/blob/main/src/graphql/query/todos.ts):
+```ts
 import { gql } from '@apollo/client';
 
 export const GET_ALL_TODOS = gql`
@@ -354,10 +348,10 @@ export const GET_ALL_TODOS = gql`
 
 #### useQuery
 
-Now this request needs to be called. Apollo provides a `useQuery` hook, let's use it:
-```tsx
-// use-query.tsx
+Now this request needs to be called. Apollo provides a `useQuery` hook, let's use it.
 
+[use-query.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/query/use-query.tsx):
+```tsx
 const UseQuery: React.FC = () => {
   const { loading, data } = useQuery(GET_ALL_TODOS);
 
@@ -369,12 +363,26 @@ const UseQuery: React.FC = () => {
 };
 ```
 
+```json
+{
+  "data": {
+    "todos": {
+      "data": [
+        { 
+          "title": "delectus aut autem" 
+        }
+      ]
+    }
+  }
+}
+```
+
 #### useLazyQuery
 
-In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook:
-```tsx
-// use-lazy-query.tsx
+In case we need to call the query ourselves, Apollo provides the `useLazyQuery` hook.
 
+[use-lazy-query.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/query/use-lazy-query.tsx):
+```tsx
 const UseLazyQuery: React.FC = () => {
   const [getTodos, { loading, data }] = useLazyQuery(GET_ALL_TODOS, {
     variables: { limit: 10 },
@@ -393,10 +401,10 @@ const UseLazyQuery: React.FC = () => {
 
 #### Polling
 
-Polling provides near-real-time synchronization with your server by executing your query periodically at a specified interval:
-```tsx
-// use-query-polling.tsx
+Polling provides near-real-time synchronization with your server by executing your query periodically at a specified interval.
 
+[use-query-polling.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/query/use-query-polling.tsx):
+```tsx
 const UseQueryPolling: React.FC = () => {
   const { loading, data } = useQuery(GET_ALL_TODOS, {
     variables: { limit: 10 },
@@ -409,10 +417,10 @@ const UseQueryPolling: React.FC = () => {
 
 #### Refetching
 
-Refetching enables you to refresh query results in response to a particular user action, as opposed to using a fixed interval:
-```tsx
-// use-query-refetch.tsx
+Refetching enables you to refresh query results in response to a particular user action, as opposed to using a fixed interval.
 
+[use-query-refetch](https://github.com/Orestli/GraphQL/blob/main/src/components/query/use-query-refetch.tsx):
+```tsx
 const UseQueryRefetch: React.FC = () => {
   const { loading, data, refetch } = useQuery(GET_ALL_TODOS);
 
@@ -429,8 +437,12 @@ const UseQueryRefetch: React.FC = () => {
 
 ### Mutations
 
+Now that we've learned how to query data from backend, the natural next step is to learn how to modify back-end data with mutations.
+
 Mutations act as `POST / DELETE / PUT / PATCH / ...` methods. 
-Let's create one for example:
+Let's create one for example.
+
+[mutation/create-todo.ts](https://github.com/Orestli/GraphQL/blob/main/src/graphql/mutation/create-todo.ts):
 ```ts
 import { gql } from '@apollo/client';
 
@@ -447,9 +459,8 @@ export const CREATE_TODO = gql`
 
 #### useMutation
 
+[use-mutation.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/mutation/use-mutation.tsx):
 ```tsx
-// use-mutation.tsx
-
 const UseMutation: React.FC = () => {
   const [title, setTitle] = useState('');
   const [completed, setCompleted] = useState(false);
@@ -502,10 +513,10 @@ const UseMutation: React.FC = () => {
 
 #### UseMutation without manually passing props (default values)
 
-The useMutation hook accepts an options object as its second parameter. Here's an example that provides some default values for GraphQL variables:
-```tsx
-// use-default-mutation.tsx
+The useMutation hook accepts an options object as its second parameter. Here's an example that provides some default values for GraphQL variables.
 
+[use-default-mutation.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/mutation/use-default-mutation.tsx):
+```tsx
 const [createTodo, { loading }] = useMutation(CREATE_TODO, {
   variables: {
     input: { title, completed: false },
@@ -523,10 +534,10 @@ This function is used to completely reset the mutation (return to the original s
 
 #### Refetching queries
 
-If you know that after the mutation you need to query for data, you can use `refetchQueries`:
-```tsx
-// use-refetch-mutation.tsx
+If you know that after the mutation you need to query for data, you can use `refetchQueries`.
 
+[use-refetch-mutation.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/mutation/use-refetch-mutation.tsx):
+```tsx
 const [createTodo] = useMutation(CREATE_TODO, {
   refetchQueries: ['Todos']
 });
@@ -535,7 +546,9 @@ After doing the `createTodo` mutation, the `Todos` query will be automatically t
 
 ### Subscriptions
 
-Let's write a GraphQL query:
+Let's write a GraphQL query.
+
+[lift-status-change.ts](https://github.com/Orestli/GraphQL/blob/main/src/graphql/subscription/lift-status-change.ts):
 ```ts
 import { gql } from '@apollo/client';
 
@@ -551,9 +564,12 @@ export const LIFT_STATUS_CHANGE = gql`
 ```
 
 #### useSubscription
-```tsx
-// use-subscription.tsx
 
+In addition to queries and mutations, GraphQL supports a third operation type: subscriptions.  
+Like queries, subscriptions enable you to fetch data. Unlike queries, subscriptions are long-lasting operations that can change their result over time. They can maintain an active connection to your GraphQL server (most commonly via WebSocket), enabling the server to push updates to the subscription's result.
+
+[use-subscription.tsx](https://github.com/Orestli/GraphQL/blob/main/src/components/subscription/use-subscription.tsx):
+```tsx
 const UseSubscription: React.FC = () => {
   const { data, loading } = useSubscription(LIFT_STATUS_CHANGE);
 
@@ -583,10 +599,10 @@ yarn add apollo-upload-client
 yarn add -D @types/apollo-upload-client
 ```
 
-Create a link instance:
-```ts
-// api/index.ts
+Create a link instance.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```ts
 const uploadLink = createUploadLink({
   uri: 'https://graphqlzero.almansi.me/api',
   credentials: 'include',
@@ -620,10 +636,10 @@ const UploadFile: React.FC () => {
 
 This link makes it easy to perform the asynchronous lookup of things like authentication tokens and more.
 
-Let's create a context:
-```ts
-// api/index.ts
+Let's create a context.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```ts
 const getMockToken = async () => crypto.randomBytes(16).toString('hex');
 
 const authLink = setContext(async (_, context) => {
@@ -641,10 +657,11 @@ const authLink = setContext(async (_, context) => {
 
 #### onError
 
-Use the onError link to perform custom logic when a GraphQL or network error occurs. You pass this link a function that's executed if an operation returns one or more errors:
-```ts
-// api/index.ts
+Use the onError link to perform custom logic when a GraphQL or network error occurs.  
+You pass this link a function that's executed if an operation returns one or more errors.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```ts
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, ...details }) =>
@@ -660,10 +677,10 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
 Now when an error occurs, `onEror` will catch it and execute our logic.
 
-Now let's handle the case in the code above if the user is not logged in:
-```ts
-// api/index.ts
+Now let's handle the case in the code above if the user is not logged in.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```ts
 const hasUnauthorized =
   graphQLErrors &&
   graphQLErrors.find((error) => error.message.includes('unauthenticated'));
@@ -673,12 +690,13 @@ if (hasUnauthorized && typeof window !== 'undefined') {
 }
 ```
 
-After creating the links we need, let's combine them together using `from`:
-```ts
-// api/index.ts
+After creating the links we need, let's combine them together using `from`.
 
+[api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
+```diff
 const client = new ApolloClient({
-  link: from([errorLink, authLink, uploadLink]),
+- uri: 'https://graphqlzero.almansi.me/api',
++ link: from([errorLink, authLink, uploadLink]),
   cache: new InMemoryCache(),
 }); 
 ```
@@ -711,10 +729,10 @@ Question by question, it will guide you through the whole process of setting up 
 
 ### Config
 
-After generation, the config file codegen.ts will be created in the root of the project (by default), let's add our plugins:
-```ts
-// codegen.ts
+After generation, the config file codegen.ts will be created in the root of the project (by default), let's add our plugins.
 
+[codegen.ts](https://github.com/Orestli/GraphQL/blob/main/codegen.ts):
+```ts
 const config: CodegenConfig = {
   overwrite: true,
   schema: 'https://graphqlzero.almansi.me/api',
@@ -738,10 +756,10 @@ By creating `.graphql` files without a schema, we lose typing. Let's add a plugi
 yarn add -D @graphql-codegen/schema-ast
 ```
 
-Update config:
-```ts
-// codegen.ts
+Update config.
 
+[codegen.ts](https://github.com/Orestli/GraphQL/blob/main/codegen.ts):
+```ts
 'src/services/generated-api/schema.graphql': {
   plugins: ['schema-ast'],
 }
@@ -769,5 +787,5 @@ yarn generate-api
 #
 Сongrats! We are done with the generator. At the output, we will get generated tools for working with the API.
 
-**API:** [index.ts]() (`src/services/generated-api/index.ts`)  
-**Schema:** [schema.graphql]() (`src/services/generated-api/schema.graphql`)
+**API:** [index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/generated-api/index.ts) (`src/services/generated-api/index.ts`)  
+**Schema:** [schema.graphql](https://github.com/Orestli/GraphQL/blob/main/src/services/generated-api/schema.graphql) (`src/services/generated-api/schema.graphql`)

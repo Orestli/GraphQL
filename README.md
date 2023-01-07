@@ -288,7 +288,6 @@ Apollo Client is a state management library that simplifies managing remote and 
 
 Applications that use Apollo Client require the following dependencies:
 ```bash
-# yarn
 yarn add @apollo/client graphql
 ```
 
@@ -626,7 +625,7 @@ const UploadFile: React.FC () => {
     target: {
       files: [file],
     },
-  }) => uploadFile({ variables: { file } })
+  }) => uploadFile({ variables: { file } });
 
   return <input type="file" onChange={onChange} />;
 }

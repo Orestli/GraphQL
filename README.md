@@ -474,8 +474,6 @@ const UseMutation: React.FC = () => {
         input: { title, completed },
       },
     });
-
-    setTitle('');
   };
 
   return !loading ? (
@@ -639,10 +637,10 @@ Let's create a context.
 
 [api/index.ts](https://github.com/Orestli/GraphQL/blob/main/src/services/api/index.ts):
 ```ts
-const getMockToken = async () => crypto.randomBytes(16).toString('hex');
+const getMockedToken = async () => crypto.randomBytes(16).toString('hex');
 
 const authLink = setContext(async (_, context) => {
-  const token = await getMockToken();
+  const token = await getMockedToken();
 
   return {
     ...context,
